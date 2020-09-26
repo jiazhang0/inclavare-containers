@@ -1,74 +1,101 @@
-# Inclavare Containers
+![inclavare-containers](docs/image/logo.png)
 
-## Introduction
-`inclavare-containers` is a set of tools for running trusted applications in containers with the hardware-assisted enclave technology. Enclave, referred to as a protected execution environment, prevents the untrusted entity from accessing the sensitive and confidential assets in use.
+Inclavare Containers is an innovation of container runtime with the novel approach for launching protected container in hardware-assisted Trusted Execution Environment (TEE) technology, aka Enclave, which can prevents the untrusted ent, such as Cloud Service Provider (CSP), from accessing the sensitive and confidential assets in use.
 
----
+Please refer to [Terminology](docs/design/terminology.md) for more technical expressions used in Inclavare Containers.
 
-## Components
-![architecture](design/architecture.png)
+# Audience
 
-### rune
-`rune` is a CLI tool for spawning and running enclaves in containers according to the OCI specification. The codebase of `rune` is a fork of [runc](https://github.com/opencontainers/runc), so `rune` can be used as `runc` if enclave is not configured or available.
+Inclavare Containers is helping to keep tenants' confidential data secure so they feel confident that their data is not being exposed to CSP or their own insiders, and they can easily move their trusted applications to the cloud.
 
-`rune` currently supports the Linux platform with x86-64 architecture only. It must be built with Go version 1.14 or higher.
+# Architecture
 
-`rune` depends on protobuf compiler. Please refer to [this guide](https://github.com/protocolbuffers/protobuf#protocol-compiler-installation) to install it on your platform. Additionally, `rune` by default enables seccomp support as [runc](https://github.com/opencontainers/runc#building) so you need to install libseccomp on your platform. Note that the libseccomp is also required in container environment, and the host version should be equal or higher than the one in container.
+Inclavare Containers follows the classic container runtime design. It takes the adaption to [containerd](https://github.com/containerd/containerd) as first class, and uses dedicated [shim-rune](https://github.com/alibaba/inclavare-containers/tree/master/shim) to interface with OCI Runtime [rune](https://github.com/alibaba/inclavare-containers/tree/master/rune). In the downstrem, [init-runelet](https://github.com/alibaba/inclavare-containers/blob/master/docs/terminology.md#init-runelet) employs a novel approach of launching [enclave runtime](https://github.com/alibaba/inclavare-containers/blob/master/docs/terminology.md#enclave-runtime) and trusted application in hardware-enforced enclave.
 
-```bash
-# create $WORKSPACE folder
-mkdir -p "$WORKSPACE"
-cd "$WORKSPACE"
-git clone https://github.com/alibaba/inclavare-containers
-cd inclavare-containers/rune
+![architecture](docs/design/architecture.png)
 
-# install Go protobuf plugin for protobuf3
-go get github.com/golang/protobuf/protoc-gen-go@v1.3.5
+The major components of Inclavare Containers are:
 
-# build and install rune
-make
-sudo make install
+- rune
+  `rune` is a CLI tool for spawning and running enclaves in containers according to the OCI specification.
+
+  `rune` is already written into [OCI Runtime implementation list](https://github.com/opencontainers/runtime-spec/blob/master/implementations.md#runtime-container).
+
+- shim-rune
+  shim-rune resides in between containerd and `rune`, conducting enclave signing and management beyond the normal `shim` basis. In particular shim-rune and `rune` can compose a basic enclave containerization stack for confidential computing, providing low barrier to the use of confidential computing and the same experience as ordinary container. Please refer to [this doc](shim/README.md) for the details.
+
+- enclave runtime
+  The backend of `rune` is a component called enclave runtime, which is responsible for loading and running trusted and protected applications inside enclaves. The interface between `rune` and enclave runtime is [Enclave Runtime PAL API](rune/libenclave/internal/runtime/pal/spec.md), which allows invoking enclave runtime through well-defined functions. The softwares for confidential computing may benefit from this interface to interact with cloud-native ecosystem.
+
+  One typical class of enclave runtime implementations is based on Library OSes. Currently, the default enclave runtime interacting with `rune` is [Occlum](https://github.com/occlum/occlum), a memory-safe, multi-process Library OS for Intel SGX.
+
+  In addition, you can write your own enclave runtime with any programming language and SDK (e.g, [Intel SGX SDK](https://github.com/intel/linux-sgx)) you prefer as long as it implements Enclave Runtime PAL API.
+
+# Non-core components 
+
+- sgx-tools
+  sgx-tools is a CLI tool, used to interact Intel SGX AESM service to retrieve various materials such as launch token, quoting enclave's target information, enclave quote and remote attestation report from IAS. Refer to [this tutorial](sgx-tools/README.md) for the details about its usage.
+
+# Roadmap
+
+# Building
+
+# Installing
+
+
+# Integrating
+
+Inclavare Containers can be integrated with dockerd and containerd.
+
+## dockerd
+
+Add the assocated configurations for `rune` in dockerd config file, e.g, `/etc/docker/daemon.json`, on your system.
+
+```json
+{
+        "runtimes": {
+                "rune": {
+                        "path": "/usr/bin/rune",
+                        "runtimeArgs": []
+                }
+        }
+}
 ```
 
-`rune` will be installed to `/usr/local/sbin/rune` on your system.
+then restart dockerd on your system.
 
-### shim-rune
-`shim-rune` resides in between `containerd` and `rune`, conducting enclave signing and management beyond the normal `shim` basis. `shim-rune` and `rune` can compose a basic enclave containerization stack for the cloud-native ecosystem. Please refer to [this guide](https://github.com/alibaba/inclavare-containers/blob/master/shim/README.md) for the details.
+You can check whether `rune` is correctly enabled or not with:
 
-### enclave runtime
-The backend of `rune` is a component called enclave runtime, which is responsible for loading and running protected applications inside enclaves. The interface between `rune` and enclave runtime is [Enclave Runtime PAL API](https://github.com/alibaba/inclavare-containers/blob/master/rune/libenclave/internal/runtime/pal/spec.md), which allows invoking enclave runtime through well-defined functions. The software for confidential computing may benefit from this interface to interact with OCI runtime.
+```shell
+docker info | grep rune
+```
 
-One typical class of enclave runtime implementations is based on library OSes. Currently, the default enclave runtime interacting with `rune` is [Occlum](https://github.com/occlum/occlum), a memory-safe, multi-process library OS for Intel SGX.
+In order to launch trusted application in [enclave container](docs/terminology.md#enclave-container).
 
-In addition, you can write your own enclave runtime with any programming language and SDK (e.g, [Intel SGX SDK](https://github.com/intel/linux-sgx)) you prefer as long as it implements Enclave Runtime PAL API.
+## containerd 
 
-### sgx-tools
-`sgx-tools` is a commandline tool, used to interact Intel SGX aesm service to retrieve various materials such as launch token, Quoting Enclave's target information, enclave quote and enclave remote attestation report from IAS. Refer to [this guide](https://github.com/alibaba/inclavare-containers/blob/master/sgx-tools/README.md) for the details about its usage.
+Add the assocated configurations for shim-rune in containerd config file, e.g, `/etc/containerd/config.toml`, on your system.
 
----
+```toml
+        [plugins.cri.containerd]
+          ...
+          [plugins.cri.containerd.runtimes.rune]
+            runtime_type = "io.containerd.rune.v2"
+```
 
-## Terminology 
-Please refer to [this doc](https://github.com/alibaba/inclavare-containers/blob/master/docs/terminology.md) for the details.
+then restart containerd on your system.
 
----
+# Running
 
-## Using rune
-### Run Occlum
-Please refer to [this guide](https://github.com/alibaba/inclavare-containers/blob/master/docs/running_rune_with_occlum.md) to run `Occlum` with `rune`.
-
-### Run skeleton
-Skeleton is an example of enclave runtime, interfacing with Enclave Runtime PAL API for easy interfacing with `rune`.  Skeleton sample code is helpful to write your own enclave runtime.
-
-Please refer to [this guide](https://github.com/alibaba/inclavare-containers/blob/master/rune/libenclave/internal/runtime/pal/skeleton/README.md) to run skeleton with `rune`.
-
-### Run OCI bundle
-Please refer to [this guide](https://github.com/alibaba/inclavare-containers/blob/master/docs/running_rune_with_occlum_bundle.md) to run `occlum bundle` with `rune`.
-
-### Run rune containers in Kubernetes cluster
-Please refer to [this guide](docs/develop_and_deploy_hello_world_application_in_kubernetes_cluster.md) to develop and deploy a rune container in a Kubernetes cluster.
-
----
-
-## Reference container image
 [The reference container images](https://hub.docker.com/u/inclavarecontainers) are available for the demonstration purpose to show how a Confidential Computing Kubernetes Cluster with Inclavare Containers works. Currently, web application demos based on OpenJDK 11, Dragonwell, and Golang are provided.
 
+# Tutorials
+
+## Confidential Computing Kubernetes Cluster
+show how a Confidential Computing Kubernetes Cluster with Inclavare Containers works.
+
+Please refer to [this guide](docs/develop_and_deploy_hello_world_application_in_kubernetes_cluster.md) to develop and deploy a rune container in a Kubernetes cluster.
+
+## Occlum LibOS
+
+Please refer to [this guide](https://github.com/alibaba/inclavare-containers/blob/master/docs/running_rune_with_occlum.md) to run `Occlum` with `rune`.
