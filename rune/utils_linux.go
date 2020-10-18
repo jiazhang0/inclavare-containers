@@ -242,13 +242,11 @@ func createContainer(context *cli.Context, id string, spec *specs.Spec, action C
 		RootlessEUID:     os.Geteuid() != 0,
 		RootlessCgroups:  rootlessCg,
 	})
-
 	if err != nil {
 		return nil, err
 	}
 
 	enclaveConfig := libenclave.CreateEnclaveConfig(spec, config)
-
 	if enclaveConfig != nil {
 		rcwd, err := os.Getwd()
 		if err != nil {
@@ -269,12 +267,12 @@ func createContainer(context *cli.Context, id string, spec *specs.Spec, action C
 		}
 	}
 
-	detached := context.Bool("detach") || (action == CT_ACT_CREATE)
-
 	factory, err := loadFactory(context)
 	if err != nil {
 		return nil, err
 	}
+
+	detached := context.Bool("detach") || (action == CT_ACT_CREATE)
 	return factory.Create(id, config, enclaveConfig, detached)
 }
 
