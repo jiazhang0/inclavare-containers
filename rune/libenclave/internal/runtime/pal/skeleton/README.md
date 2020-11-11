@@ -187,3 +187,30 @@ Assuming you have an OCI bundle according to previous steps, please add config i
 cd "$HOME/rune_workdir/rune-container"
 sudo rune run skeleton-enclave-container
 ```
+
+---
+
+# Enclave NULL dereference protection
+
+The potential attacker may re-map zero page to induce the buggy enclave to
+read the zero page fed with malicious data, or write the confidential data
+to zero page.
+
+In order to prevent from this attack, skeleton enclave runtime implements
+enclave NULL dereference protection for OOT and in-tree drivers.
+
+To enable this protection, prepare the enclave image with -z option when
+signing:
+```shell
+sgxsign -z signing_key.pem encl.bin encl.ss
+```
+
+Note that OOT and in-tree drivers have different designs and
+implementations. This also affects enclave NULL dereference protection.
+
+For OOT driver, the restriction from mmapping must be disabled:
+```shell
+sudo sysctl -w vm.mmap_min_addr=0
+```
+
+Note in-tree driver doesn't need to do it.

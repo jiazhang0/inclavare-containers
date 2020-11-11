@@ -71,10 +71,10 @@ int pal_exec(pal_exec_args *attr)
 }
 /* *INDENT-ON* */
 
-int pal_get_local_report(void *targetinfo, int targetinfo_len, void *report,
+int pal_get_local_report(uint64_t base, void *targetinfo, int targetinfo_len, void *report,
 			 int *report_len)
 {
-	return __pal_get_local_report(targetinfo, targetinfo_len, report,
+	return __pal_get_local_report(base, targetinfo, targetinfo_len, report,
 				      report_len);
 }
 
