@@ -18,6 +18,7 @@ type EnclaveConfig struct {
 const (
 	EnclaveTypeNone     string = ""
 	EnclaveTypeIntelSgx string = "intelSgx"
+	EnclaveTypeAwsNitroEnclaves string = "AwsNitroEnclaves"
 )
 
 type Enclave struct {
