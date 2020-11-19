@@ -17,15 +17,15 @@ func IsEnclaveEnabled(e *configs.Enclave) bool {
 		return false
 	}
 
-	if !IsEnclaveHwEnabled(e.Type) {
+	if !IsProbedEnclaveEnabled(e.Type) {
 		return false
 	}
 
 	return true
 }
 
-// Check whether enclave-based hardware is supported or not
-func IsEnclaveHwEnabled(etype string) bool {
+// Check whether enclave probed is supported or not
+func IsProbedEnclaveEnabled(etype string) bool {
 	if etype == "" && enclaveType != "" {
 		return true
 	}
