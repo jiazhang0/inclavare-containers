@@ -27,7 +27,11 @@ func createLibenclaveMount(cwd string) *configs.Mount {
 	}
 }
 
-func CreateLibenclaveMount(cwd string, config *configs.Config) {
+func CreateLibenclaveMount(cwd string, config *configs.Config, etype string) {
+	if etype != enclaveConfigs.EnclaveTypeIntelSgx {
+		return
+	}
+
 	aesmedMounted := false
 	for _, m := range config.Mounts {
 		if strings.EqualFold(m.Destination, "/var/run/aesmd") || strings.EqualFold(m.Destination, "/run/aesmd") {
