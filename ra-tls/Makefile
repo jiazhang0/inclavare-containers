@@ -78,9 +78,6 @@ wolfssl: WOLFSSL_CONFIGURE_FLAGS := --prefix=$(shell readlink -f $(PREFIX)) --en
 # then RATLS_ECDSA will be wrote into options.h, even just make(compiling attestation based on EPID), the RATLS_ECDSA will still be in
 # options.h. So it needs be reconfigured before compiling, options.h will be re-generated according to new configuration.
 wolfssl:
-	if [ -d "./wolfssl" ]; then \
-		cd wolfssl && ./autogen.sh && CFLAGS="$(CFLAGS)" ./configure $(WOLFSSL_CONFIGURE_FLAGS) || true; \
-	fi
 	if [ ! -d "./wolfssl" ]; then \
 		git clone -b v4.6.0-stable https://github.com/wolfSSL/wolfssl && \
 		cd wolfssl && git apply ../patch/wolfssl.patch && \
@@ -146,9 +143,11 @@ ifdef DEBUG
 CURL_CONFFLAGS += --enable-debug
 endif
 curl-wolfssl:
-	git clone https://github.com/curl/curl.git -b curl-7_47_0 curl-wolfssl && \
+	if [ ! -d "./curl-wolfssl" ]; then \
+	  git clone https://github.com/curl/curl.git -b curl-7_47_0 curl-wolfssl && \
 	  cd curl-wolfssl && ./buildconf && \
-	  CFLAGS="-fPIC" ./configure $(CURL_CONFFLAGS) --without-ssl --with-cyassl=$(shell readlink -f $(PREFIX))
+	  CFLAGS="-fPIC" ./configure $(CURL_CONFFLAGS) --without-ssl --with-cyassl=$(shell readlink -f $(PREFIX)); \
+	fi
 
 $(LIBDIR)/libra-attester.a: wolfssl wolfssl-ra-attester.o wolfssl-ra.o ias-ra.o
 	$(AR) rcs $@ $(filter %.o, $^)
