@@ -55,17 +55,22 @@ COMMIT ?= $(if $(shell git status --porcelain --untracked-files=no),"$(COMMIT_NO
 # glibc-static is required for the static linkage, if elv depends on dynamic library, need to remove '-extldflags -static'
 #GO_BUILD := CGO_ENABLED=1 $(GO) build $(MOD_VENDOR) $(GCFLAGS) $(EXTRA_FLAGS) -tags "$(BUILDTAGS) netgo osusergo" \
         -ldflags "-w -extldflags -static -X main.gitCommit=$(COMMIT) -X main.version=$(VERSION) $(EXTRA_LDFLAGS)"
+
+BUILD_TAGS := "epid"
 ifdef LA
-GO_BUILD := CGO_ENABLED=1 $(GO) build $(MOD_VENDOR) -buildmode=pie $(GCFLAGS) $(EXTRA_FLAGS) -tags "lareport" \
-	-ldflags "-X main.gitCommit=$(COMMIT) -X main.version=$(VERSION) $(EXTRA_LDFLAGS)"
-elv: $(LIBDIR)/liberpal-stub.a libra-tls-client.a $(LIBDIR)/libra-challenger.a $(LIBDIR)/libwolfssl.a
-	$(GO_BUILD) -o $@ .
-else
-GO_BUILD := CGO_ENABLED=1 $(GO) build $(MOD_VENDOR) -buildmode=pie $(GCFLAGS) $(EXTRA_FLAGS) -tags "ra" \
-	-ldflags "-X main.gitCommit=$(COMMIT) -X main.version=$(VERSION) $(EXTRA_LDFLAGS)"
-elv: libra-tls-client.a $(LIBDIR)/libra-challenger.a $(LIBDIR)/libwolfssl.a
-	$(GO_BUILD) -o $@ .
+  BUILD_TAGS := "local_report"
+else ifdef ECDSA
+  BUILD_TAGS := "dcap"
 endif
+
+GO_BUILD := CGO_ENABLED=1 $(GO) build $(MOD_VENDOR) -buildmode=pie $(GCFLAGS) $(EXTRA_FLAGS) -tags $(BUILD_TAGS) \
+	-ldflags "-X main.gitCommit=$(COMMIT) -X main.version=$(VERSION) $(EXTRA_LDFLAGS)"
+ifdef LA
+elv: $(LIBDIR)/liberpal-stub.a libra-tls-client.a $(LIBDIR)/libra-challenger.a $(LIBDIR)/libwolfssl.a
+else
+elv: libra-tls-client.a $(LIBDIR)/libra-challenger.a $(LIBDIR)/libwolfssl.a
+endif
+	$(GO_BUILD) -o $@ .
 
 install: elv
 	cp -f elv $(BINDIR)
