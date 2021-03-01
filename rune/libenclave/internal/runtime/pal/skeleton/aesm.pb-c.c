@@ -10,13 +10,13 @@
 void   aesm_service_request__get_launch_token__init
                      (AesmServiceRequest__GetLaunchToken         *message)
 {
-  static const AesmServiceRequest__GetLaunchToken init_value = AESM_SERVICE_REQUEST__GET_LAUNCH_TOKEN__INIT;
+  static AesmServiceRequest__GetLaunchToken init_value = AESM_SERVICE_REQUEST__GET_LAUNCH_TOKEN__INIT;
   *message = init_value;
 }
 void   aesm_service_request__init
                      (AesmServiceRequest         *message)
 {
-  static const AesmServiceRequest init_value = AESM_SERVICE_REQUEST__INIT;
+  static AesmServiceRequest init_value = AESM_SERVICE_REQUEST__INIT;
   *message = init_value;
 }
 size_t aesm_service_request__get_packed_size
@@ -53,21 +53,19 @@ void   aesm_service_request__free_unpacked
                      (AesmServiceRequest *message,
                       ProtobufCAllocator *allocator)
 {
-  if(!message)
-    return;
   assert(message->base.descriptor == &aesm_service_request__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
 void   aesm_service_response__get_launch_token__init
                      (AesmServiceResponse__GetLaunchToken         *message)
 {
-  static const AesmServiceResponse__GetLaunchToken init_value = AESM_SERVICE_RESPONSE__GET_LAUNCH_TOKEN__INIT;
+  static AesmServiceResponse__GetLaunchToken init_value = AESM_SERVICE_RESPONSE__GET_LAUNCH_TOKEN__INIT;
   *message = init_value;
 }
 void   aesm_service_response__init
                      (AesmServiceResponse         *message)
 {
-  static const AesmServiceResponse init_value = AESM_SERVICE_RESPONSE__INIT;
+  static AesmServiceResponse init_value = AESM_SERVICE_RESPONSE__INIT;
   *message = init_value;
 }
 size_t aesm_service_response__get_packed_size
@@ -104,8 +102,6 @@ void   aesm_service_response__free_unpacked
                      (AesmServiceResponse *message,
                       ProtobufCAllocator *allocator)
 {
-  if(!message)
-    return;
   assert(message->base.descriptor == &aesm_service_response__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
@@ -114,9 +110,9 @@ static const ProtobufCFieldDescriptor aesm_service_request__get_launch_token__fi
   {
     "enclavehash",
     1,
-    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_BYTES,
-    0,   /* quantifier_offset */
+    offsetof(AesmServiceRequest__GetLaunchToken, has_enclavehash),
     offsetof(AesmServiceRequest__GetLaunchToken, enclavehash),
     NULL,
     NULL,
@@ -126,9 +122,9 @@ static const ProtobufCFieldDescriptor aesm_service_request__get_launch_token__fi
   {
     "modulus",
     2,
-    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_BYTES,
-    0,   /* quantifier_offset */
+    offsetof(AesmServiceRequest__GetLaunchToken, has_modulus),
     offsetof(AesmServiceRequest__GetLaunchToken, modulus),
     NULL,
     NULL,
@@ -138,9 +134,9 @@ static const ProtobufCFieldDescriptor aesm_service_request__get_launch_token__fi
   {
     "attributes",
     3,
-    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_BYTES,
-    0,   /* quantifier_offset */
+    offsetof(AesmServiceRequest__GetLaunchToken, has_attributes),
     offsetof(AesmServiceRequest__GetLaunchToken, attributes),
     NULL,
     NULL,
@@ -150,9 +146,9 @@ static const ProtobufCFieldDescriptor aesm_service_request__get_launch_token__fi
   {
     "timeout",
     9,
-    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_UINT32,
-    0,   /* quantifier_offset */
+    offsetof(AesmServiceRequest__GetLaunchToken, has_timeout),
     offsetof(AesmServiceRequest__GetLaunchToken, timeout),
     NULL,
     NULL,
@@ -192,7 +188,7 @@ static const ProtobufCFieldDescriptor aesm_service_request__field_descriptors[1]
   {
     "getLaunchToken",
     3,
-    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_MESSAGE,
     0,   /* quantifier_offset */
     offsetof(AesmServiceRequest, getlaunchtoken),
@@ -230,9 +226,9 @@ static const ProtobufCFieldDescriptor aesm_service_response__get_launch_token__f
   {
     "error",
     1,
-    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_UINT32,
-    0,   /* quantifier_offset */
+    offsetof(AesmServiceResponse__GetLaunchToken, has_error),
     offsetof(AesmServiceResponse__GetLaunchToken, error),
     NULL,
     NULL,
@@ -242,9 +238,9 @@ static const ProtobufCFieldDescriptor aesm_service_response__get_launch_token__f
   {
     "token",
     2,
-    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_BYTES,
-    0,   /* quantifier_offset */
+    offsetof(AesmServiceResponse__GetLaunchToken, has_token),
     offsetof(AesmServiceResponse__GetLaunchToken, token),
     NULL,
     NULL,
@@ -281,7 +277,7 @@ static const ProtobufCFieldDescriptor aesm_service_response__field_descriptors[1
   {
     "getLaunchToken",
     3,
-    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_MESSAGE,
     0,   /* quantifier_offset */
     offsetof(AesmServiceResponse, getlaunchtoken),
